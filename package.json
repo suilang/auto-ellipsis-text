@@ -4,11 +4,23 @@
     "types": "dist/index.d.ts",
     "main": "dist/index.js",
     "module": "dist.index.js",
+    "collaborators": [
+        "suilang <suilangzpc@gmail.com>"
+    ],
+    "description": "A component that automatically generate ellipsis text. Write by React.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/suilang/auto-ellipsis-text.git"
+    },
+    "files": [
+        "dist",
+        "package.json"
+    ],
     "scripts": {
         "start": "webpack serve ",
-        "build": "yarn build:webpack && yarn build:tsc",
+        "build": "yarn build:tsc",
         "build:webpack": "webpack --mode=production",
-        "build:tsc": "tsc",
+        "build:tsc": "tsc -p tsconfig.prod.json",
         "analyze": "webpack --mode=production --env analyze",
         "lint": "eslint src --ext js,ts,tsx",
         "format": "prettier --write .",
@@ -60,5 +72,10 @@
         "webpack-bundle-analyzer": "^4.10.2",
         "webpack-cli": "^4.8.0",
         "webpack-dev-server": "^4.0.0"
-    }
+    },
+    "keywords": [
+        "React",
+        "ellipsis",
+        "auto ellipsis text"
+    ]
 }

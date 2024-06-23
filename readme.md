@@ -1,51 +1,41 @@
-# 前言
-项目中经常会遇到缩略展示文字的场景，即要求文字在一行不换行展示，超出自动展示`...`
+[简体中文](./readme.zh.md)
 
-常用的展示效果有两种，文字中间缩略以及文字末尾缩略，效果如下所示
+---
+
+# Preface
+In projects, it is common to encounter scenarios where text needs to be abbreviated, displaying in a single line without wrapping, and automatically showing '...' when exceeding the container's width.
+
+There are two commonly used effects for this purpose: abbreviation in the middle of the text and at the end of the text. The effects are as follows:
+
 ```
-// 中间缩略
-这是一段超长...超长文字如何展示
-
-// 末尾缩略
-这是一段超长的文字，看看超长....
+// Middle abbreviation
+This is an overly long...overly long text display.
+// End abbreviation
+This is an overly long text, see how it exceeds....
 ```
-
-对于描述之类的文本，一般选择末尾缩略，这种场景仅靠`css`即可快速实现。但是对于文件名之类的场景，会期望中间缩略，保留末尾的文件后缀。下面分别介绍下两种方案的实现。
-
-
-# 末尾缩略
-
-使用css需实现3个效果：
-
-1. 内容超出不展示
-2. 文字不会自动折行
-3. 设置对应超出样式
-
-> 如果在实现过程中发现样式不生效，一定是上述3个条件有不满足的。
-
-对应`css`代码如下：
+For descriptive text, it is generally preferred to abbreviate at the end, which can be quickly achieved with `css` alone. However, for filenames and similar scenarios, it is desirable to abbreviate in the middle while keeping the file extension at the end. Below, I will introduce the implementation of both methods.
+# End Abbreviation
+To achieve this with `css`, you need to implement three effects:
+1. Hide content that exceeds the container.
+2. Prevent text from wrapping automatically.
+3. Set the corresponding style for overflow.
+> If you find that the style is not taking effect during implementation, it is certain that one or more of the above three conditions are not met.
+The corresponding `css` code is as follows:
 ```css
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 ```
-
-# 中间缩略
-
-中间缩略的样式，只能手动切分字符串，并在中间拼接`...`， 因此关键在与，如何获得要切分的起止位置。
-
-## 思路整理
-
-> 本例使用`React`实现
-
-1. 因为要做到通用性所以， container 的宽度是不能确定的，它的宽度需要根据它外层的父元素来决定。因此定义两层嵌套元素，外层宽度跟随父元素，并设置`overflow: hidden;white-space: nowrap;`。内层宽度不做限定，保证可以正常占位。
-
+# Middle Abbreviation
+The style for middle abbreviation requires manually splitting the string and inserting '...' in the middle. The key is to determine the starting and ending positions for the split.
+## Organizing the Approach
+> This example uses `React` for implementation.
+1. To ensure versatility, the width of the container cannot be predetermined; it needs to adapt to the width of its parent element. Therefore, two nested elements are defined: the outer element follows the parent's width and sets `overflow: hidden; white-space: nowrap;`, while the inner element has no width restrictions to ensure it can occupy space normally.
 ```js
 <div className="auto-ellipsis-text">
     <span className="auto-ellipsis-text-inner">{str}</span>
- </div>
+</div>
 ```
-
 ```css
 .auto-ellipsis-text{
     width: 100%;
@@ -53,42 +43,35 @@
     white-space: nowrap;
 }
 ```
-
-2. 然后实现下宽度计算逻辑，并更新渲染节点
-
-在`div.auto-ellipsis-text`上增加`ref`，获取对应的`dom`句柄
-
-
+2. Then, implement the logic for calculating width and update the rendered node.
+Add a `ref` to `div.auto-ellipsis-text` to get the corresponding DOM handle.
 ```js
 const handle = useCallback(() => {
-    // 获取渲染节点的句柄
+    // Get the handle of the rendered node
     const cu = textRef.current;
     if (!cu) {
         return;
     }
-    // 获取此时父元素宽度
+    // Get the width of the parent element
     const width = cu.clientWidth;
-
-    // 获取文本节点宽度
+    // Get the width of the text node
     const textChild = cu.firstElementChild as HTMLElement;
     const innerWidth = textChild.offsetWidth;
     
-    // 没有超出则不处理
+    // If it does not exceed, do nothing
     if (width >= innerWidth) {
         return;
     }
-
-    // 计算切分位置
+    // Calculate the split position
     const splitWidth = width / 2;
-
     const range = document.createRange();
     const length = textChild.innerText.length;
     const arr = [];
     let countWidth = 0;
     let startIndex = 0;
     let endIndex = 0;
-    // 步进为2，逐个获取对应的宽度，并在首次累计宽度大于 splitWidth 时记录起始位置，
-    // 在首次剩余宽度小于 splitWidth 时，记录截止位置，停止for循环
+    // Step through by 2, getting the corresponding width one by one, and recording the start position when the cumulative width first exceeds splitWidth,
+    // and recording the end position when the remaining width first falls below splitWidth, stopping the for loop
     for (let i = 0; i < length - 2; i += 2) {
         range.setStart(textChild.childNodes[0], i);
         range.setEnd(textChild.childNodes[0], i + 2);
@@ -103,19 +86,16 @@ const handle = useCallback(() => {
             break;
         }
     }
-    // 切分字符串并补充缩略符
+    // Split the string and append the ellipsis
     const newStr = text.slice(0, startIndex) + '...' + str.slice(endIndex);
-
-    // 更新渲染节点
+    // Update the rendered node
     setStr(newStr);
 }, []);
-
 ```
-## 最终实现
-
-1. 如果每个实例都监听父元素宽度的变化，性能太差，因此补充入参`version`，由调用方自行监听宽度并变更`version`来触发更新
-2. 在`useEffect`中监听`version`和`text`的变化，先重置`str`，保证渲染是最新的，然后在下个事件循环中，使用上文中的方式，计算切分位置并更新文本渲染
-3. 不直接依赖`str`是为了防止计算出问题导致的无线死循环，上条中`useEffect`只会在`text`变化或者`version`变化后才会执行
+## Final Implementation
+1. Monitoring the width change of the parent element for each instance would be too performance-intensive, so an input parameter `version` is added. The caller is responsible for listening to the width change and updating `version` to trigger the update.
+2. In `useEffect`, listen for changes in `version` and `text`, reset `str` first to ensure that the render is up-to-date, and then in the next event loop, calculate the split position and update the text render using the method described above.
+3. Direct reliance on `str` is avoided to prevent infinite loops
 
 ```js
 export default function AutoEllipsisText({
@@ -131,7 +111,7 @@ export default function AutoEllipsisText({
     const textRef = useRef<HTMLDivElement>(null);
 
     const handle = useCallback(() => {
-        /* 功能函数...*/
+        /* function...*/
     }, []);
 
     useEffect(() => {
@@ -149,3 +129,7 @@ export default function AutoEllipsisText({
 }
 
 ```
+
+# License
+
+This project is licensed under [MIT License](./LICENCE.md)
