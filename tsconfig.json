@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "allowSyntheticDefaultImports": true,
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "declarationDir": "dist",
+        "emitDeclarationOnly": true,
+        "outDir": "dist",
+        "sourceMap": false,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "downlevelIteration": true,
+        "jsx": "react-jsx",
+        "baseUrl": "src",
+        "paths": {
+            "@/*": ["./*"]
+        }
+    },
+    "files": ["src/index.ts"],
+    "include": ["src/**/*"],
+    "exclude": ["src/**/*.test*"]
+}
